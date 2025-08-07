@@ -1,7 +1,7 @@
 package com.pack.utils;
 
 import com.pack.common.dto.OrderResponseDTO;
-import com.pack.dto.OrderRequestDTO;
+import com.pack.common.dto.OrderRequestDTO;
 import com.pack.entity.Order;
 
 public class OrderMapper {

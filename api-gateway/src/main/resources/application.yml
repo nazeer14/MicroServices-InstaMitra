@@ -44,6 +44,16 @@ spring:
           lower-case-service-id: true
 
       routes:
+        - id: admin-service
+          uri: lb://admin-service
+          predicates:
+            - Path=/admin-service/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+
         - id: user-service
           uri: lb://user-service
           predicates:
@@ -99,7 +109,8 @@ spring:
 
       httpclient:
         wiretap: true
-        response-timeout: 5000
+        connect-timeout: 5000
+        response-timeout: 15s
 
       forwarded:
         enabled: true

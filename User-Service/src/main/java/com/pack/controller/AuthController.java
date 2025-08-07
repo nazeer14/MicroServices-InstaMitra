@@ -58,7 +58,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.LOCKED).body("This number was Locked. Contact customer support.");
         }
 
-        List<String> roles = List.of("USER", "ADMIN");
+        List<String> roles = List.of("USER");
 
         String accessToken = jwtUtil.generateToken(request.getPhone(), roles);
         String refreshToken = jwtUtil.generateRefreshToken(request.getPhone());
@@ -76,7 +76,7 @@ public class AuthController {
 
         String phone = jwtUtil.extractUserId(refreshToken);
 
-        List<String> roles = List.of("USER", "ADMIN");
+        List<String> roles = List.of("USER");
 
 
         String newAccessToken = jwtUtil.generateToken(phone, roles);

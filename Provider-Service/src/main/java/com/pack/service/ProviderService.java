@@ -5,9 +5,11 @@ import com.pack.common.dto.ProviderRequestDTO;
 import com.pack.entity.Provider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface ProviderService {
     Provider validateAndAdd(String phone);
 
@@ -32,5 +34,7 @@ public interface ProviderService {
     Provider updateStatus(Long id, boolean isOnline);
 
     String enableProvider(Long id, boolean isEnable);
+
+    List<Provider> getByServiceId(Long serviceId);
 }
 

@@ -4,6 +4,7 @@ import com.pack.common.enums.Role;
 import com.pack.enums.ProviderType;
 import com.pack.enums.VerificationStatus;
 import jakarta.persistence.*;
+import jdk.jshell.ImportSnippet;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,7 +16,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Table(name = "providers")
 public class Provider {
 
@@ -47,6 +48,11 @@ public class Provider {
     @Column(name = "service")
     private List<String> servicesOffered;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "service_ids", joinColumns = @JoinColumn(name = "provider_id"))
+    @Column(name = "service")
+    private List<String> serviceIds;
+
     private Integer experienceInYears;
     private BigDecimal hourlyRate;
 
@@ -71,7 +77,7 @@ public class Provider {
 
     private String reasonForLock;
 
-    private boolean submitted=false;
+    private boolean isSubmitted=false;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "provider_remarks", joinColumns = @JoinColumn(name = "provider_id"))
@@ -79,12 +85,13 @@ public class Provider {
     private List<String> remarks;
 
     @Column(name = "verification_status")
-    private VerificationStatus verificationStatus=VerificationStatus.NULL;
+    private VerificationStatus verificationStatus;
 
     @Enumerated(EnumType.STRING)
     private Role role= Role.PROVIDER;
 
     private boolean isEnabled=true;
+
 }
 
 

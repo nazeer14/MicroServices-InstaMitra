@@ -2,7 +2,7 @@ package com.pack.controller;
 
 import com.pack.common.dto.OrderResponseDTO;
 import com.pack.common.enums.OrderStatus;
-import com.pack.dto.OrderRequestDTO;
+import com.pack.common.dto.OrderRequestDTO;
 import com.pack.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +31,12 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable("id") Long orderId) {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
     }
+    @GetMapping("/{orderId}/get")
+    public ResponseEntity<OrderResponseDTO> getOrderByOrderNumber(@PathVariable("orderId") String orderId) {
+        return ResponseEntity.ok(orderService.getOrderByOrderNumber(orderId));
+    }
 
     @GetMapping("/active")
-    @PreAuthorize("ADMIN")
     public ResponseEntity<List<OrderResponseDTO>> getActiveOrders() {
         return ResponseEntity.ok(orderService.getActiveOrders());
     }
@@ -63,7 +66,6 @@ public class OrderController {
     }
 
     @GetMapping("/status/{status}")
-    @PreAuthorize("ADMIN")
     public ResponseEntity<List<OrderResponseDTO>> getOrdersByStatus(@PathVariable String status) {
         return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status)));
     }

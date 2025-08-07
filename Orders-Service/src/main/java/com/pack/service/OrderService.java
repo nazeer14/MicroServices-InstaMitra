@@ -3,7 +3,7 @@ package com.pack.service;
 
 import com.pack.common.dto.OrderResponseDTO;
 import com.pack.common.enums.OrderStatus;
-import com.pack.dto.OrderRequestDTO;
+import com.pack.common.dto.OrderRequestDTO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

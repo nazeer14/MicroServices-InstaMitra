@@ -16,24 +16,25 @@ spring:
 
 
 
+
 management:
   endpoints:
     web:
       exposure:
         include: "*"
   endpoint:
-     health:
-       show-details: ALWAYS
-
+    health:
+      show-details: ALWAYS
 
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-    instance:
-      prefer-ip-address: true
-      ip-address: 127.0.0.1
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    hostname: localhost
 
 
 springdoc:

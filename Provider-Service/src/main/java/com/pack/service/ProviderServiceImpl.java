@@ -72,6 +72,12 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
+    public List<Provider> getByServiceId(Long serviceId) {
+       return providerRepository
+               .findByServiceIdAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(serviceId);
+    }
+
+    @Override
     public Page<Provider> getAllPaged(Pageable pageable) {
         return providerRepository.findAll(pageable);
     }

@@ -15,10 +15,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -36,20 +38,34 @@ public class ProviderController {
         return ResponseEntity.ok(ProviderMapper.toDto(providerService.getById(id)));
     }
 
+    @GetMapping("/{id}/get")
+    @Operation(summary = "Get provider by service ID")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<?> getByServiceId(@PathVariable("id") Long serviceId) {
+        List<ProviderResponseDTO> result= providerService.getByServiceId(serviceId)
+                .stream()
+                .map(ProviderMapper::toDto)
+                .toList();
+
+        return ResponseEntity.ok(result);
+
+    }
+
     @GetMapping
     @Operation(summary = "Get all providers (paginated)")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<ProviderResponseDTO>> getAll(
-            @ParameterObject Pageable pageable,
-            @RequestParam(required = false) Boolean online
-    ) {
-        Page<Provider> page = (online == null)
+    public ResponseEntity<?> getAll(
+            Pageable pageable,
+            @RequestParam(value = "isActive", required = false) Boolean isActive) {
+
+        Page<Provider> page = (isActive == null)
                 ? providerService.getAllPaged(pageable)
-                : providerService.getByOnlineStatus(online, pageable);
+                : providerService.getByOnlineStatus(isActive, pageable);
 
         Page<ProviderResponseDTO> dtoPage = page.map(ProviderMapper::toDto);
         return ResponseEntity.ok(dtoPage);
     }
+
 
     @PutMapping("/{id}")
     @Operation(summary = "Update provider profile")
@@ -99,4 +115,6 @@ public class ProviderController {
             @RequestParam("is_online") boolean isOnline) {
         return ResponseEntity.ok(ProviderMapper.toDto(providerService.updateStatus(id, isOnline)));
     }
+
+
 }

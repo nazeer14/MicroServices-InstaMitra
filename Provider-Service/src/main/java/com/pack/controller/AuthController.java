@@ -7,6 +7,7 @@ import com.pack.common.dto.RefreshTokenRequest;
 import com.pack.common.enums.Role;
 import com.pack.dto.LoginResponse;
 import com.pack.entity.Provider;
+import com.pack.service.ProviderService;
 import com.pack.service.ProviderServiceImpl;
 import com.pack.utils.OtpService;
 import jakarta.validation.Valid;
@@ -29,7 +30,7 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    private final ProviderServiceImpl providerService;
+    private final ProviderService providerService;
 
     private final OtpService otpService;
 
@@ -58,7 +59,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.LOCKED).body("This number was Locked. Contact customer support.");
         }
 
-        List<String> roles = List.of("PROVIDER","ADMIN");
+        List<String> roles = List.of("PROVIDER");
 
 
         String accessToken = jwtUtil.generateToken(request.getPhone(), roles);
@@ -78,7 +79,7 @@ public class AuthController {
         String phone = jwtUtil.extractUserId(refreshToken);
 
 
-        List<String> roles = List.of("PROVIDER", "ADMIN");
+        List<String> roles = List.of("PROVIDER");
 
 
         String newAccessToken = jwtUtil.generateToken(phone, roles);
