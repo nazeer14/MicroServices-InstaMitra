@@ -104,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Feign call to update order status
         try {
-            orderUpdateClient.updateOrderStatus(tx.getId(),PaymentStatus.PAID.name());
+            orderUpdateClient.updateOrderStatus(tx.getOrderId(),PaymentStatus.PAID.name());
         } catch (Exception e) {
             log.error("Failed to notify order-service: {}", e.getMessage());
         }

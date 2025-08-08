@@ -35,6 +35,6 @@ public interface ProviderService {
 
     String enableProvider(Long id, boolean isEnable);
 
-    List<Provider> getByServiceId(Long serviceId);
+    List<Provider> getByServiceId(String serviceId);
 }
 

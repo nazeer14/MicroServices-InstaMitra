@@ -94,7 +94,7 @@ class ProviderControllerTest {
     @WithMockUser(username = "admin", roles = {"PROVIDER"})
     @Test
     void testGetByServiceId() throws Exception {
-        when(providerService.getByServiceId(100L)).thenReturn(List.of(sampleProvider));
+        when(providerService.getByServiceId("SS-110")).thenReturn(List.of(sampleProvider));
 
         mockMvc.perform(get("/provider/v1/100/get"))
                 .andExpect(status().isOk())
@@ -106,7 +106,7 @@ class ProviderControllerTest {
     @WithMockUser(username = "admin", roles = {"PROVIDER", "ADMIN"})
     @Test
     void testGetProvidersByServiceId() throws Exception {
-        Long serviceId = 1L;
+        String serviceId = "SS-1";
 
         // Mock Provider entities (not DTOs)
         Provider provider1 = Provider.builder()

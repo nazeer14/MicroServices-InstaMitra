@@ -72,9 +72,8 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public List<Provider> getByServiceId(Long serviceId) {
-       return providerRepository
-               .findByServiceIdAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(serviceId);
+    public List<Provider> getByServiceId(String serviceId) {
+       return providerRepository.findByServiceIdsContainsAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(serviceId);
     }
 
     @Override
@@ -101,6 +100,7 @@ public class ProviderServiceImpl implements ProviderService{
         provider.setProviderType(ProviderType.valueOf(dto.getProviderType()));
         provider.setIndustryType(dto.getIndustryType());
         provider.setServicesOffered(dto.getServicesOffered());
+        provider.setServiceIds(dto.getServiceIds());
         provider.setExperienceInYears(dto.getExperienceInYears());
         provider.setHourlyRate(dto.getHourlyRate());
         provider.setTeamSize(dto.getTeamSize());

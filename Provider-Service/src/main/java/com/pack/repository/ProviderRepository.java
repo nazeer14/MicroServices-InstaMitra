@@ -12,6 +12,6 @@ public interface ProviderRepository extends JpaRepository<Provider,Long> {
     Optional<Provider> findByPhoneNumber(String phoneNumber);
 
     Page<Provider> findByIsOnline(boolean online, Pageable pageable);
-    List<Provider> findByServiceIdAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(Long serviceId);
+    List<Provider> findByServiceIdsContainsAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(String serviceId);
 
 }

@@ -1,39 +1,67 @@
 package com.pack.utils;
 
+import com.pack.common.dto.ProviderRequestDTO;
 import com.pack.common.dto.ProviderResponseDTO;
 import com.pack.entity.Provider;
+import com.pack.enums.ProviderType;
 
 public class ProviderMapper {
-    public static ProviderResponseDTO toDto(Provider p) {
+
+    public static Provider toEntity(ProviderRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return Provider.builder()
+                .fullName(dto.getFullName())
+                .phoneNumber(dto.getPhoneNumber())
+                .email(dto.getEmail())
+                .gender(dto.getGender())
+                .age(dto.getAge())
+                .profileImageUrl(dto.getProfileImageUrl())
+                .location(dto.getLocation())
+                .providerType(ProviderType.valueOf(dto.getProviderType()))
+                .industryType(dto.getIndustryType())
+                .servicesOffered(dto.getServicesOffered())
+                .serviceIds(dto.getServiceIds())
+                .experienceInYears(dto.getExperienceInYears())
+                .hourlyRate(dto.getHourlyRate())
+                .teamSize(dto.getTeamSize())
+                .licenseNumber(dto.getLicenseNumber())
+                .build();
+    }
+
+    public static ProviderResponseDTO toDto(Provider entity) {
+        if (entity == null) {
+            return null;
+        }
+
         return ProviderResponseDTO.builder()
-                .id(p.getId())
-                .fullName(p.getFullName())
-                .phoneNumber(p.getPhoneNumber())
-                .email(p.getEmail())
-                .gender(p.getGender())
-                .age(p.getAge())
-                .profileImageUrl(p.getProfileImageUrl())
-                .location(p.getLocation())
-                .providerType(p.getProviderType().name())
-                .industryType(p.getIndustryType())
-                .servicesOffered(p.getServicesOffered())
-                .experienceInYears(p.getExperienceInYears())
-                .hourlyRate(p.getHourlyRate())
-                .isVerified(p.isVerified())
-                .verificationStars(p.getVerificationStars())
-                .isActive(p.getIsActive())
-                .isOnline(p.getIsOnline())
-                .lastLoginAt(p.getLastLoginAt())
-                .lastLogoutAt(p.getLastLogoutAt())
-                .teamSize(p.getTeamSize())
-                .licenseNumber(p.getLicenseNumber())
-                .isLocked(p.isLocked())
-                .reasonForLock(p.getReasonForLock())
-                .submitted(p.isSubmitted())
-                .remarks(p.getRemarks())
-                .verificationStatus(p.getVerificationStatus().name())
-                .role(p.getRole())
-                .isEnabled(p.isEnabled())
+                .id(entity.getId())
+                .fullName(entity.getFullName())
+                .phoneNumber(entity.getPhoneNumber())
+                .email(entity.getEmail())
+                .gender(entity.getGender())
+                .age(entity.getAge())
+                .profileImageUrl(entity.getProfileImageUrl())
+                .location(entity.getLocation())
+                .providerType(entity.getProviderType().name())
+                .industryType(entity.getIndustryType())
+                .servicesOffered(entity.getServicesOffered())
+                .serviceIds(entity.getServiceIds())
+                .experienceInYears(entity.getExperienceInYears())
+                .hourlyRate(entity.getHourlyRate())
+                .isVerified(entity.isVerified())
+                .verificationStars(entity.getVerificationStars())
+                .isActive(entity.getIsActive())
+                .isOnline(entity.getIsOnline())
+                .lastLoginAt(entity.getLastLoginAt())
+                .lastLogoutAt(entity.getLastLogoutAt())
+                .teamSize(entity.getTeamSize())
+                .licenseNumber(entity.getLicenseNumber())
+                .remarks(entity.getRemarks())
+                .role(entity.getRole())
+                .isEnabled(entity.isEnabled())
                 .build();
     }
 }

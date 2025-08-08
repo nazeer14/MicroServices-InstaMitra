@@ -28,7 +28,7 @@ public interface OrderService {
 
     List<OrderResponseDTO> getOrdersByStatus(Long id, String status);
 
-    void updateOrderStatus(Long orderId, OrderStatus orderStatus);
+    void updateOrderStatus(String orderId, OrderStatus orderStatus);
 
     OrderResponseDTO updateOrder(Long orderId, @Valid OrderRequestDTO requestDTO);
 

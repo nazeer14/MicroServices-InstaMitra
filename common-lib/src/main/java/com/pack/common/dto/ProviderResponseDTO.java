@@ -1,7 +1,6 @@
 package com.pack.common.dto;
 
 import com.pack.common.enums.Role;
-
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -25,6 +24,7 @@ public class ProviderResponseDTO {
     private String providerType;
     private String industryType;
     private List<String> servicesOffered;
+    private List<String> serviceIds;
     private Integer experienceInYears;
     private BigDecimal hourlyRate;
     private boolean isVerified;
@@ -35,13 +35,7 @@ public class ProviderResponseDTO {
     private LocalDateTime lastLogoutAt;
     private Integer teamSize;
     private String licenseNumber;
-    private boolean isLocked;
-    private String reasonForLock;
-    private boolean submitted;
     private List<String> remarks;
     private Role role;
     private boolean isEnabled;
-    private String verificationStatus;
-
-
 }

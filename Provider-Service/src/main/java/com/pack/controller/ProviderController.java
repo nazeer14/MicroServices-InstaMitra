@@ -33,15 +33,13 @@ public class ProviderController {
 
     @GetMapping("/{id}/get-provider")
     @Operation(summary = "Get provider by ID")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROVIDER')")
     public ResponseEntity<ProviderResponseDTO> getById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(ProviderMapper.toDto(providerService.getById(id)));
     }
 
     @GetMapping("/{id}/get")
     @Operation(summary = "Get provider by service ID")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<?> getByServiceId(@PathVariable("id") Long serviceId) {
+    public ResponseEntity<?> getByServiceId(@PathVariable("id") String serviceId) {
         List<ProviderResponseDTO> result= providerService.getByServiceId(serviceId)
                 .stream()
                 .map(ProviderMapper::toDto)
@@ -53,7 +51,6 @@ public class ProviderController {
 
     @GetMapping
     @Operation(summary = "Get all providers (paginated)")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAll(
             Pageable pageable,
             @RequestParam(value = "isActive", required = false) Boolean isActive) {
@@ -67,9 +64,8 @@ public class ProviderController {
     }
 
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/update")
     @Operation(summary = "Update provider profile")
-    @PreAuthorize("hasRole('PROVIDER')")
     public ResponseEntity<ProviderResponseDTO> update(
             @PathVariable("id") Long id,
             @RequestBody @Valid ProviderRequestDTO request) {
@@ -85,7 +81,6 @@ public class ProviderController {
 
     @PostMapping("/lock/{id}")
     @Operation(summary = "Lock a provider")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> lock(@PathVariable("id") Long id, @RequestParam("reason") String reason) {
         providerService.lockProvider(id, reason);
         return ResponseEntity.ok("Provider locked");
@@ -93,7 +88,6 @@ public class ProviderController {
 
     @PostMapping("/unlock/{id}")
     @Operation(summary = "Unlock a provider")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> unlock(@PathVariable("id") Long id) {
         providerService.unlockProvider(id);
         return ResponseEntity.ok("Provider unlocked");
@@ -101,15 +95,13 @@ public class ProviderController {
 
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Delete a provider")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable("id") Long id) {
         providerService.deleteProvider(id);
         return ResponseEntity.ok("Provider deleted");
     }
 
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{id}/online_status")
     @Operation(summary = "Update provider online/offline status")
-    @PreAuthorize("hasRole('PROVIDER')")
     public ResponseEntity<ProviderResponseDTO> updateStatus(
             @PathVariable("id") Long id,
             @RequestParam("is_online") boolean isOnline) {

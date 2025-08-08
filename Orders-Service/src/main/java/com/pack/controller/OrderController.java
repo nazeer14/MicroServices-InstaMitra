@@ -41,7 +41,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getActiveOrders());
     }
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<String> updateOrderStatus(@PathVariable Long orderId, @RequestParam String status) {
+    public ResponseEntity<String> updateOrderStatus(@PathVariable String orderId, @RequestParam String status) {
         orderService.updateOrderStatus(orderId, OrderStatus.valueOf(status.toUpperCase()));
         return ResponseEntity.ok("Order status updated successfully");
     }
@@ -59,7 +59,7 @@ public class OrderController {
     }
 
 
-    @GetMapping("/status/{providerId}")
+    @GetMapping("/status/by-provider/{providerId}")
     public ResponseEntity<List<OrderResponseDTO>> getActiveOrdersById(@PathVariable("providerId") Long providerId,@RequestParam("status") String status) {
         OrderStatus status1=OrderStatus.valueOf(status.toUpperCase());
         return ResponseEntity.ok(orderService.getOrdersByStatus(providerId, status1.name()));
