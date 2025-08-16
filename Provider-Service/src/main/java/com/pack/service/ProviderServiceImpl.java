@@ -1,18 +1,19 @@
 package com.pack.service;
 
-
+import com.pack.common.dto.Gender;
 import com.pack.common.dto.ProviderRequestDTO;
+import com.pack.dto.FormDetails;
 import com.pack.entity.Provider;
 import com.pack.enums.ProviderType;
-import com.pack.exception.ProviderNotFoundException;
+import com.pack.enums.VerificationStatus;
 import com.pack.repository.ProviderRepository;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,35 +21,55 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProviderServiceImpl implements ProviderService{
+public class ProviderServiceImpl implements ProviderService {
 
     private final ProviderRepository providerRepository;
 
-
     @Override
     public Provider validateAndAdd(String phoneNumber) {
-       Optional<Provider> provider= providerRepository.findByPhoneNumber(phoneNumber);
-       if(provider.isPresent())
-       {
-           Provider provider1=provider.get();
-           provider1.setVerified(true);
-           return providerRepository.save(provider1);
-       }
-       Provider provider1=new Provider();
-       provider1.setPhoneNumber(phoneNumber);
-       provider1.setVerified(true);
-       return providerRepository.save(provider1);
+        Optional<Provider> provider = providerRepository.findByPhoneNumber(phoneNumber);
+        if (provider.isPresent()) {
+            Provider provider1 = provider.get();
+            provider1.setVerified(true);
+            return providerRepository.save(provider1);
+        }
+        Provider provider1 = new Provider();
+        provider1.setPhoneNumber(phoneNumber);
+        provider1.setVerified(true);
+        return providerRepository.save(provider1);
     }
+
+    @Override
+    public Provider submitDetails(Long id, FormDetails dto) {
+        Provider provider = providerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found"));
+
+        provider.setFullName(dto.getFullName());
+        provider.setIndustryType(dto.getIndustryType());
+        provider.setProfileImageUrl(dto.getProfileImageUrl());
+        provider.setGender(dto.getGender());
+        provider.setLicenseNumber(dto.getLicenseNumber());
+        provider.setAge(dto.getAge());
+        provider.setSubmitted(true);
+        provider.setServicesOffered(dto.getServicesOffered());
+        provider.setServiceIds(dto.getServiceIds());
+        provider.setTeamSize(dto.getTeamSize());
+        provider.setLocation(dto.getLocation());
+        provider.setVerificationStatus(VerificationStatus.PROCESSING);
+
+        return providerRepository.save(provider);
+    }
+
     @Override
     public Provider findByPhone(String phone) {
         return providerRepository.findByPhoneNumber(phone)
-                .orElseThrow(() -> new ProviderNotFoundException("Provider with Number "+phone+" not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with Number " + phone + " not found"));
     }
 
     @Override
     public Provider getById(Long id) {
         return providerRepository.findById(id)
-                .orElseThrow(() -> new ProviderNotFoundException("Provider with ID "+id+" not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found"));
     }
 
     @Override
@@ -57,14 +78,14 @@ public class ProviderServiceImpl implements ProviderService{
     }
 
     @Override
-    public String enableProvider(Long id,boolean isEnable){
-        Optional<Provider> provider=providerRepository.findById(id);
-        if(provider.isEmpty()){
-            throw new ProviderNotFoundException("Provider with "+id+" not found");
+    public String enableProvider(Long id, boolean isEnable) {
+        Optional<Provider> provider = providerRepository.findById(id);
+        if (provider.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with " + id + " not found");
         }
-        Provider newProvider=provider.get();
-        if(newProvider.isEnabled() == isEnable){
-            return "Not updatable ";
+        Provider newProvider = provider.get();
+        if (newProvider.isEnabled() == isEnable) {
+            return "Not updatable";
         }
         newProvider.setEnabled(isEnable);
         providerRepository.save(newProvider);
@@ -73,7 +94,15 @@ public class ProviderServiceImpl implements ProviderService{
 
     @Override
     public List<Provider> getByServiceId(String serviceId) {
-       return providerRepository.findByServiceIdsContainsAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(serviceId);
+        return providerRepository.findByServiceIdsContainsAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(serviceId);
+    }
+
+    @Override
+    public void setVerify(Long id, boolean isVerify) {
+        Provider provider = providerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found with id " + id));
+        provider.setVerified(isVerify);
+        providerRepository.save(provider);
     }
 
     @Override
@@ -93,7 +122,7 @@ public class ProviderServiceImpl implements ProviderService{
 
         provider.setFullName(dto.getFullName());
         provider.setEmail(dto.getEmail());
-        provider.setGender(dto.getGender());
+        provider.setGender(Gender.valueOf(dto.getGender()));
         provider.setAge(dto.getAge());
         provider.setProfileImageUrl(dto.getProfileImageUrl());
         provider.setLocation(dto.getLocation());
@@ -108,7 +137,6 @@ public class ProviderServiceImpl implements ProviderService{
 
         return providerRepository.save(provider);
     }
-
 
     @Override
     public void lockProvider(Long id, String reason) {
@@ -128,11 +156,11 @@ public class ProviderServiceImpl implements ProviderService{
 
     @Override
     public void deleteProvider(Long id) {
-        Optional<Provider> provider=providerRepository.findById(id);
-        if(provider.isEmpty()){
-            throw new RuntimeException("Invalid Id");
+        Optional<Provider> provider = providerRepository.findById(id);
+        if (provider.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found");
         }
-        Provider provider1=provider.get();
+        Provider provider1 = provider.get();
         provider1.setLocked(true);
         providerRepository.save(provider1);
     }

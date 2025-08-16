@@ -1,5 +1,6 @@
 package com.pack.controller;
 
+import com.pack.common.response.ApiResponse;
 import com.pack.dto.PaginatedResponse;
 import com.pack.dto.SubServiceDTO;
 import com.pack.entity.SubService;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/subservices/v1")
+@RequestMapping("/api/v1/subservice")
 @RequiredArgsConstructor
 @Tag(name = "Sub Services", description = "Endpoints for managing Sub Services")
 public class SubServiceController {
@@ -71,8 +72,7 @@ public class SubServiceController {
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String[] sort
     ) {
-        Sort sortOrder = Sort.by(getSortOrders(sort));
-        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
         Page<SubService> resultPage = subServicesService.getAvailableSubServices(pageable);
 
         PaginatedResponse<SubService> response = new PaginatedResponse<>(
@@ -80,8 +80,7 @@ public class SubServiceController {
                 resultPage.getNumber(),
                 resultPage.getSize(),
                 resultPage.getTotalElements(),
-                resultPage.getTotalPages(),
-                resultPage.isLast()
+                resultPage.getTotalPages()
         );
 
         return ResponseEntity.ok(response);
@@ -90,7 +89,7 @@ public class SubServiceController {
     @Operation(summary = "Get paginated list of available SubServices by Service ID")
     @GetMapping("/available/by-service/{serviceId}")
     public ResponseEntity<Page<SubService>> getAvailableSubServicesByServiceId(
-            @PathVariable Long serviceId,
+            @PathVariable String serviceId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -136,4 +135,29 @@ public class SubServiceController {
         }
         return orders;
     }
+
+    @Operation(summary = "get all service by id")
+    @GetMapping("/services/{serviceId}/available-subservices")
+    public ResponseEntity<ApiResponse<?>> getAvailableSubServicesByServiceId(
+            @PathVariable String serviceId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction
+    ) {
+        Pageable pageable = PageRequest.of(page, size, direction, sortBy);
+        Page<SubService> resultPage = subServicesService.getAvailableSubServicesByServiceId(serviceId, pageable);
+
+        PaginatedResponse<SubService> response = new PaginatedResponse<>(
+                resultPage.getContent(),
+                resultPage.getNumber(),
+                resultPage.getSize(),
+                resultPage.getTotalElements(),
+                resultPage.getTotalPages()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("success", response));
+    }
+
+
 }

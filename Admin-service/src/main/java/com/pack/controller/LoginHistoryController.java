@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/login-history")
+@RequestMapping("/api/v1/login-history")
 @RequiredArgsConstructor
 @Tag(name = "Login History", description = "Track admin login times")
 public class LoginHistoryController {

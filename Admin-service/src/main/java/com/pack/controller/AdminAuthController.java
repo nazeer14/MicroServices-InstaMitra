@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/admin/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AdminAuthController {
 
@@ -39,6 +39,7 @@ public class AdminAuthController {
 
     @Value("${super.admin.key}")
     private String superAdminKey;
+
 
     public static final List<String> SUPER_ADMIN_ROLES = List.of("USER", "ADMIN", "PROVIDER", "SUPERADMIN");
     public static final List<String> ADMIN_ROLES = List.of("ADMIN");

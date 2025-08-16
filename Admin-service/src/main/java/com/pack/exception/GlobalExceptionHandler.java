@@ -1,5 +1,7 @@
 package com.pack.exception;
 
+import com.pack.common.exception.JwtTokenExpiredException;
+import com.pack.common.response.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,11 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(JwtTokenExpiredException.class)
+    public ResponseEntity<?> handleJwtTokenExpired(JwtTokenExpiredException ex) {
+        ApiResponse<?> response = ApiResponse.exception( ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {

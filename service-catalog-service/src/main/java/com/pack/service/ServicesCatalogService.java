@@ -1,9 +1,13 @@
 package com.pack.service;
 
+import com.pack.dto.PaginatedResponse;
+import com.pack.dto.ServicesDTO;
 import com.pack.entity.ServiceCatalog;
 import com.pack.entity.SubService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +19,7 @@ public interface ServicesCatalogService {
 
     ServiceCatalog addService(ServiceCatalog newService);
 
-    void updateService(ServiceCatalog updatedService);
+    ServiceCatalog updateService(Long id,ServicesDTO dto);
 
     void enableService(Long id,boolean isEnable);
 
@@ -29,5 +33,6 @@ public interface ServicesCatalogService {
 
     void deleteService(Long id);
 
-    Page<SubService> getAvailableSubServices(Pageable pageable);
+    PaginatedResponse<SubService> getAvailableSubServices(String code,int page, int size, Sort sort);
+
 }

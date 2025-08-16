@@ -1,24 +1,45 @@
 package com.pack.common.response;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
-@Getter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ApiResponse<T> {
     private boolean success;
     private String message;
+    private int statusCode;
     private T data;
-
-    public ApiResponse(boolean success, String message, T data) {
-        this.success = success;
-        this.message = message;
-        this.data = data;
-    }
+    private LocalDateTime timestamp;
 
     public static <T> ApiResponse<T> ok(String message, T data) {
-        return new ApiResponse<>(true, message, data);
+        return ApiResponse.<T>builder()
+                .success(true)
+                .message(message)
+                .data(data)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
-    public static <T> ApiResponse<T> fail(String message) {
-        return new ApiResponse<>(false, message, null);
+    public static ApiResponse<?> error(String message) {
+        return ApiResponse.builder()
+                .success(false)
+                .message(message)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public static ApiResponse<?> exception(String message,int status){
+        return ApiResponse.builder()
+                .success(false)
+                .message(message)
+                .statusCode(status)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 }

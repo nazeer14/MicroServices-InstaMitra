@@ -6,14 +6,15 @@ import com.pack.repository.ServiceRepository;
 import com.pack.repository.SubServiceRepository;
 import com.pack.service.SubServicesService;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
+
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,20 +26,20 @@ public class SubServicesServiceImpl implements SubServicesService {
     @Override
     public SubService getById(Long id) {
         return subServiceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("SubService not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "SubService not found with id: " + id));
     }
 
     @Override
     public SubService getByName(String name) {
         return subServiceRepository.findByName(name)
-                .orElseThrow(() -> new NotFoundException("SubService not found with name: " + name));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "SubService not found with name: " + name));
     }
 
     @Override
     @Transactional
     public String addSubService(Long serviceId, List<SubService> subServices) {
         ServiceCatalog serviceCatalog = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Service not found"));
 
         for (SubService sub : subServices) {
             sub.setService(serviceCatalog);
@@ -50,7 +51,6 @@ public class SubServicesServiceImpl implements SubServicesService {
 
         return "Sub-services added with codes";
     }
-
 
     @Override
     public void deleteSubService(Long id) {
@@ -72,14 +72,11 @@ public class SubServicesServiceImpl implements SubServicesService {
         return subServiceRepository.findAllByServiceId(serviceId);
     }
 
-
-    // SubServiceServiceImpl.java
     @Override
     public SubService getByCode(String code) {
         return subServiceRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Sub-service not found with code: " + code));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Sub-service not found with code: " + code));
     }
-
 
     @Override
     public Page<SubService> getAvailableSubServices(Pageable pageable) {
@@ -87,10 +84,7 @@ public class SubServicesServiceImpl implements SubServicesService {
     }
 
     @Override
-    public Page<SubService> getAvailableSubServicesByServiceId(Long serviceId, Pageable pageable) {
+    public Page<SubService> getAvailableSubServicesByServiceId(String serviceId, Pageable pageable) {
         return subServiceRepository.findAllByServiceIdAndItIsAvailable(serviceId, true, pageable);
     }
-
-
 }
-

@@ -1,5 +1,6 @@
 package com.pack.controller;
 
+import com.pack.common.dto.OrderCompletedDTO;
 import com.pack.common.dto.OrderResponseDTO;
 import com.pack.common.enums.OrderStatus;
 import com.pack.common.dto.OrderRequestDTO;
@@ -13,10 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/orders/v1")
+@RequestMapping("/api/v1/order")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -40,16 +43,21 @@ public class OrderController {
     public ResponseEntity<List<OrderResponseDTO>> getActiveOrders() {
         return ResponseEntity.ok(orderService.getActiveOrders());
     }
+    /*
+    *  Using Payment Service update Order status and Payment status, add transaction id
+    * */
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<String> updateOrderStatus(@PathVariable String orderId, @RequestParam String status) {
-        orderService.updateOrderStatus(orderId, OrderStatus.valueOf(status.toUpperCase()));
-        return ResponseEntity.ok("Order status updated successfully");
+    public ResponseEntity<?> updateOrderStatus(@PathVariable String orderId, @RequestBody OrderCompletedDTO dto) {
+        orderService.updateOrderStatus(orderId, dto);
+        Map<String,String> res=new HashMap<>();
+        res.put("message","Order updated successfully");
+        return ResponseEntity.ok(res);
     }
-    @PutMapping("/{orderId}/update")
+    @PutMapping("/{orderNumber}/update")
     public ResponseEntity<OrderResponseDTO> updateOrderDetails(
-            @PathVariable Long orderId,
+            @PathVariable Long orderNumber,
             @RequestBody @Valid OrderRequestDTO requestDTO) {
-        return ResponseEntity.ok(orderService.updateOrder(orderId, requestDTO));
+        return ResponseEntity.ok(orderService.updateOrder(orderNumber, requestDTO));
     }
 
     @PostMapping("/{orderId}/cancel")
@@ -62,20 +70,20 @@ public class OrderController {
     @GetMapping("/status/by-provider/{providerId}")
     public ResponseEntity<List<OrderResponseDTO>> getActiveOrdersById(@PathVariable("providerId") Long providerId,@RequestParam("status") String status) {
         OrderStatus status1=OrderStatus.valueOf(status.toUpperCase());
-        return ResponseEntity.ok(orderService.getOrdersByStatus(providerId, status1.name()));
+        return ResponseEntity.ok(orderService.getOrdersByStatus(providerId, status1));
     }
 
-    @GetMapping("/status/{status}")
+    @GetMapping("/by-status/{status}")
     public ResponseEntity<List<OrderResponseDTO>> getOrdersByStatus(@PathVariable String status) {
         return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status)));
     }
 
-    @GetMapping("/provider/{providerId}")
+    @GetMapping("/by-provider/{providerId}")
     public ResponseEntity<List<OrderResponseDTO>> getOrdersByProvider(@PathVariable("providerId") Long providerId) {
         return ResponseEntity.ok(orderService.getOrdersByProviderId(providerId));
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/by-user/{userId}")
     public ResponseEntity<List<OrderResponseDTO>> getOrdersByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }

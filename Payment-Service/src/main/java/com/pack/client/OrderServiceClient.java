@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
         fallbackFactory = OrderServiceFallbackFactory.class
 )
 public interface OrderServiceClient {
-    @GetMapping("/orders/v1/transaction/{paymentId}")
+    @GetMapping("/api/v1/orders/transaction/{paymentId}")
     OrderDetailsDTO getOrderDetailsByPaymentId(@PathVariable String paymentId);
 
-    @GetMapping("/orders/v1/{orderId}/get")
+    @GetMapping("/api/v1/orders/{orderId}/get")
     OrderResponseDTO getOrderDetailsByOrderId(@PathVariable String orderId);
 }
 

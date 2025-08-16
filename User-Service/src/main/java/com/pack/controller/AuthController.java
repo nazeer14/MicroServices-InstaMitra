@@ -4,10 +4,8 @@ import com.pack.auth.JwtUtil;
 import com.pack.common.dto.AuthRequest;
 import com.pack.common.dto.JwtResponse;
 import com.pack.common.dto.RefreshTokenRequest;
-import com.pack.common.enums.Role;
 import com.pack.dto.LoginResponse;
 import com.pack.entity.User;
-import com.pack.repository.UserRepo;
 import com.pack.service.UserService;
 import com.pack.utils.OtpService;
 import jakarta.validation.Valid;
@@ -18,71 +16,101 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("user/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
-
     private final JwtUtil jwtUtil;
-
     private final OtpService otpService;
 
-    @PostMapping("/send/{phoneNumber}")
-    public ResponseEntity<String> sendOtp(@PathVariable("phoneNumber") @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits") String phoneNumber) {
+    // ===================== SEND OTP =====================
+    @PostMapping("/otp/send/{phoneNumber}")
+    public ResponseEntity<?> sendOtp(
+            @PathVariable("phoneNumber")
+            @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
+            String phoneNumber) {
 
         otpService.generateAndStoreOtp(phoneNumber);
-        //use third party services to send otp. Like twilio, firebase
+        // TODO: Integrate actual OTP provider (e.g., Twilio, Firebase)
 
-        return ResponseEntity.ok("Otp sent to " + phoneNumber);
+        return ResponseEntity.ok(buildSuccessMessage("OTP sent to " + phoneNumber));
     }
 
-    @PostMapping("/verify")
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
-        //validate user with otp
+    // ===================== VERIFY OTP & LOGIN =====================
+    @PostMapping("/otp/verify")
+    public ResponseEntity<?> verifyOtpAndLogin(@RequestBody @Valid AuthRequest request) {
+        // Validate OTP
         if (!otpService.validateOtp(request.getPhone(), request.getOtp())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Incorrect OTP");
+            return buildErrorResponse("Incorrect OTP", HttpStatus.BAD_REQUEST);
         }
 
+        // Validate or create user
         User user = userService.validateAndAddUser(request.getPhone());
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Verification failed. Try again");
-        }
-        if (user.isLocked()) {
-            return ResponseEntity.status(HttpStatus.LOCKED).body("This number was Locked. Contact customer support.");
+            return buildErrorResponse("Verification failed. Try again", HttpStatus.UNAUTHORIZED);
         }
 
+        // Check if locked
+        if (user.isLocked()) {
+            return buildErrorResponse("This account is locked. Contact customer support.", HttpStatus.LOCKED);
+        }
+
+        // Roles for JWT
         List<String> roles = List.of("USER");
 
+        // Generate tokens
         String accessToken = jwtUtil.generateToken(request.getPhone(), roles);
         String refreshToken = jwtUtil.generateRefreshToken(request.getPhone());
 
-        return ResponseEntity.ok(new LoginResponse(accessToken, refreshToken, user, LocalDateTime.now()));
+        return ResponseEntity.ok(
+                new LoginResponse(accessToken, refreshToken, user, LocalDateTime.now())
+        );
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<JwtResponse> refresh(@RequestBody RefreshTokenRequest request) {
+    // ===================== REFRESH TOKEN =====================
+    @PostMapping("/token/refresh")
+    public ResponseEntity<?> refreshAccessToken(@RequestBody @Valid RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 
         if (!jwtUtil.validateToken(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
+            return buildErrorResponse("Invalid refresh token", HttpStatus.UNAUTHORIZED);
         }
 
         String phone = jwtUtil.extractUserId(refreshToken);
-
         List<String> roles = List.of("USER");
-
-
         String newAccessToken = jwtUtil.generateToken(phone, roles);
 
         return ResponseEntity.ok(
-                new JwtResponse(newAccessToken, refreshToken, "Bearer", roles));
+                new JwtResponse(newAccessToken, refreshToken, "Bearer", roles)
+        );
+    }
 
+    // ===================== PRIVATE HELPERS =====================
+    private ResponseEntity<Object> buildErrorResponse(String message, HttpStatus status) {
+        return ResponseEntity.status(status)
+                .body(new ErrorResponse(status.value(), message));
+    }
+
+    private ResponseEntity<Object> buildSuccessMessage(String message) {
+        return ResponseEntity.ok(new SuccessResponse(HttpStatus.OK.value(), message));
+    }
+
+    // Inner classes for consistent API responses
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    static class ErrorResponse {
+        private int status;
+        private String message;
+    }
+
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    static class SuccessResponse {
+        private int status;
+        private String message;
     }
 }

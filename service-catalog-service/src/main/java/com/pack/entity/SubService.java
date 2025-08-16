@@ -20,6 +20,7 @@ public class SubService implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String code;
 
     @Column(nullable = false, unique = true)
@@ -27,13 +28,10 @@ public class SubService implements Serializable {
 
     private String description;
 
-
-
     @ManyToOne
     @JoinColumn(name = "service_id")
     @JsonBackReference
     private ServiceCatalog service;
-
 
     @Column(name = "it_is_available")
     private boolean itIsAvailable;

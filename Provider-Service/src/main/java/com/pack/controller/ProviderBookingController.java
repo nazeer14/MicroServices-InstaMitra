@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/provider/v1/booking")
+@RequestMapping("/api/v1/provider-order")
 @EnableMethodSecurity
 @EnableWebSecurity
 @AllArgsConstructor

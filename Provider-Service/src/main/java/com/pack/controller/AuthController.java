@@ -23,12 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/provider/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     private final ProviderService providerService;
 

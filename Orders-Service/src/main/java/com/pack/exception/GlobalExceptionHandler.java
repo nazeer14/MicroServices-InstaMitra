@@ -1,5 +1,7 @@
 package com.pack.exception;
 
+import com.pack.common.exception.JwtTokenExpiredException;
+import com.pack.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -29,6 +31,11 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI()
         );
+    }
+    @ExceptionHandler(JwtTokenExpiredException.class)
+    public ResponseEntity<ApiResponse<?>> handleJwtTokenExpired(JwtTokenExpiredException ex) {
+        ApiResponse<?> response = ApiResponse.exception( ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
 

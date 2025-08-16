@@ -2,7 +2,7 @@ package com.pack.service.impl;
 
 import com.pack.client.OrderServiceClient;
 import com.pack.client.OrderUpdateClient;
-import com.pack.common.dto.OrderRequestDTO;
+import com.pack.common.dto.OrderCompletedDTO;
 import com.pack.common.dto.OrderResponseDTO;
 import com.pack.common.enums.OrderStatus;
 import com.pack.common.enums.PaymentStatus;
@@ -13,17 +13,14 @@ import com.pack.enums.TransactionType;
 import com.pack.repository.TransactionRepository;
 import com.pack.service.PaymentService;
 import com.razorpay.*;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -41,12 +38,11 @@ public class PaymentServiceImpl implements PaymentService {
     private String keySecret;
 
     private final TransactionRepository transactionRepository;
-
     private final OrderServiceClient orderServiceClient;
     private final OrderUpdateClient orderUpdateClient;
 
     @Override
-    public String createPaymentOrder(BigDecimal amount,TransactionType transactionType, String bookingId) throws RazorpayException {
+    public String createPaymentOrder(BigDecimal amount, TransactionType transactionType, String bookingId) throws RazorpayException {
         RazorpayClient razorpay = new RazorpayClient(keyId, keySecret);
 
         JSONObject orderRequest = new JSONObject();
@@ -55,23 +51,23 @@ public class PaymentServiceImpl implements PaymentService {
         orderRequest.put("receipt", bookingId);
         orderRequest.put("payment_capture", 1);
 
-        OrderResponseDTO dto=new OrderResponseDTO();
-        try{
-          dto=orderServiceClient.getOrderDetailsByOrderId(bookingId);
-        }catch (Exception e){
+        OrderResponseDTO dto;
+        try {
+            dto = orderServiceClient.getOrderDetailsByOrderId(bookingId);
+        } catch (Exception e) {
             log.error("Failed to get order-details: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to fetch order details");
         }
+
         if (dto == null || dto.getOrderNumber() == null) {
-            throw new IllegalArgumentException("Invalid order Id. Please check.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid order Id. Please check.");
         }
-        if(dto.getStatus().equals(OrderStatus.CANCELED)){
-            return "Order is cancelled";
+        if (dto.getStatus().equals(OrderStatus.CANCELED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is cancelled");
         }
-
-        if(dto.getPaymentStatus().equals(PaymentStatus.PAID)){
-            return "Amount already paid. please check.";
+        if (dto.getPaymentStatus().equals(PaymentStatus.PAID)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount already paid. Please check.");
         }
-
 
         Order order = razorpay.orders.create(orderRequest);
 
@@ -93,37 +89,38 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void handlePaymentSuccess(String razorpayPaymentId, String orderId, String signature) {
-        Optional<Transaction> txOpt = transactionRepository.findByTransactionId(razorpayPaymentId);
-        if(txOpt.isEmpty()){
-            throw new IllegalArgumentException("Invalid Transaction Id not found");
-        }
-        Transaction tx = txOpt.get();
+        Transaction tx = transactionRepository.findByTransactionId(razorpayPaymentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid Transaction Id"));
+
         tx.setPaymentStatus(PaymentStatus.PAID);
         tx.setRemarks("Payment successful via Razorpay");
         transactionRepository.save(tx);
 
         // Feign call to update order status
         try {
-            orderUpdateClient.updateOrderStatus(tx.getOrderId(),PaymentStatus.PAID.name());
+            OrderCompletedDTO dto = new OrderCompletedDTO();
+            dto.setOrderStatus(OrderStatus.COMPLETED);
+            dto.setPaymentStatus(PaymentStatus.PAID);
+            dto.setTransactionId(tx.getTransactionId());
+            orderUpdateClient.updateOrderStatus(tx.getOrderId(), dto);
         } catch (Exception e) {
             log.error("Failed to notify order-service: {}", e.getMessage());
         }
     }
 
+    @Override
     public String refundPayment(RefundRequestDTO dto) {
+        Transaction txn = transactionRepository.findByTransactionId(dto.getTransactionId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
+
+        if (PaymentStatus.REFUNDED.equals(txn.getPaymentStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already refunded");
+        }
+        if (dto.getAmount().compareTo(txn.getAmount()) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refund amount exceeds transaction amount");
+        }
+
         try {
-            // Check if already refunded
-            Transaction txn = transactionRepository.findByTransactionId(dto.getTransactionId())
-                    .orElseThrow(() -> new RuntimeException("Transaction not found"));
-
-            if (PaymentStatus.REFUNDED.equals(txn.getPaymentStatus())) {
-                return "Already refunded.";
-            }
-
-            if (dto.getAmount().compareTo(txn.getAmount()) > 0) {
-                return "Refund amount exceeds transaction amount.";
-            }
-
             // Call Razorpay Refund API
             String credentials = keyId + ":" + keySecret;
             String base64Creds = Base64.getEncoder().encodeToString(credentials.getBytes());
@@ -155,22 +152,22 @@ public class PaymentServiceImpl implements PaymentService {
                 return "Refund successful. Refund ID: " + txn.getRefundTransactionId();
             }
 
-            return "Refund API failed with no ID returned.";
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Refund API failed with no ID returned");
+        } catch (ResponseStatusException ex) {
+            throw ex; // rethrow known HTTP exceptions
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Refund failed: " + e.getMessage();
+            log.error("Refund failed: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Refund failed: " + e.getMessage());
         }
     }
 
+    @Override
     public OrderDetailsDTO fetchOrderFromOrderService(String paymentId) {
         try {
             return orderServiceClient.getOrderDetailsByPaymentId(paymentId);
         } catch (Exception e) {
-            // Additional handling if fallback returns null
             log.warn("Failed to fetch order details: {}", e.getMessage());
-            return null;
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to fetch order details");
         }
     }
-
 }
-

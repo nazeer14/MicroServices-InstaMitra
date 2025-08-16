@@ -15,6 +15,5 @@ public class PaginatedResponse<T> {
     private int pageSize;
     private long totalElements;
     private int totalPages;
-    private boolean last;
 }
 

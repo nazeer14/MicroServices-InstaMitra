@@ -2,7 +2,6 @@ package com.pack.common.dto;
 
 import com.pack.common.enums.OrderStatus;
 import com.pack.common.enums.PaymentStatus;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

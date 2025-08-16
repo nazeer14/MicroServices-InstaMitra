@@ -2,6 +2,7 @@ package com.pack.controller;
 
 import com.pack.common.dto.ProviderRequestDTO;
 import com.pack.common.dto.ProviderResponseDTO;
+import com.pack.dto.FormDetails;
 import com.pack.entity.Provider;
 import com.pack.service.ProviderService;
 import com.pack.utils.ProviderMapper;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 
 @RestController
-@RequestMapping("/provider/v1")
+@RequestMapping("/api/v1/provider")
 @RequiredArgsConstructor
 @Tag(name = "Provider Management", description = "Endpoints for provider operations")
 public class ProviderController {
@@ -63,6 +64,13 @@ public class ProviderController {
         return ResponseEntity.ok(dtoPage);
     }
 
+    @PostMapping("/{id}/submit")
+    @Operation(summary = "submit provider details for first time")
+    public ResponseEntity<ProviderResponseDTO> submitForm(@PathVariable Long id, @RequestParam @Valid FormDetails dto){
+        Provider provider=providerService.submitDetails(id,dto);
+        return ResponseEntity.ok(ProviderMapper.toDto(provider));
+    }
+
 
     @PutMapping("/{id}/update")
     @Operation(summary = "Update provider profile")
@@ -75,8 +83,16 @@ public class ProviderController {
 
     @PostMapping("/enable/{id}")
     @Operation(summary = "is Enable for Service")
-    public ResponseEntity<?> enableForService(@PathVariable("id") Long id,@RequestParam("isEnable") boolean isEnable){       String msg=providerService.enableProvider(id,isEnable);
+    public ResponseEntity<?> enableForService(@PathVariable("id") Long id,@RequestParam("isEnable") boolean isEnable){
+        String msg=providerService.enableProvider(id,isEnable);
         return ResponseEntity.ok(msg + (isEnable ? " You are now enabled for service." : " You are now disabled for service."));
+    }
+
+    @PatchMapping("{id}/is-verify")
+    @Operation(summary = "verifying provider details")
+    public ResponseEntity<String> verified(@PathVariable Long id, @RequestParam boolean isVerify){
+        providerService.setVerify(id,isVerify);
+        return ResponseEntity.ok("provider "+ (isVerify? " verified":"not verified"));
     }
 
     @PostMapping("/lock/{id}")
@@ -103,10 +119,7 @@ public class ProviderController {
     @PatchMapping("/{id}/online_status")
     @Operation(summary = "Update provider online/offline status")
     public ResponseEntity<ProviderResponseDTO> updateStatus(
-            @PathVariable("id") Long id,
-            @RequestParam("is_online") boolean isOnline) {
+            @PathVariable("id") Long id, @RequestParam("is_online") boolean isOnline) {
         return ResponseEntity.ok(ProviderMapper.toDto(providerService.updateStatus(id, isOnline)));
     }
-
-
 }

@@ -2,6 +2,7 @@ package com.pack.service;
 
 
 import com.pack.common.dto.ProviderRequestDTO;
+import com.pack.dto.FormDetails;
 import com.pack.entity.Provider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ import java.util.List;
 @Service
 public interface ProviderService {
     Provider validateAndAdd(String phone);
+
+    Provider submitDetails(Long id, FormDetails dto);
 
     Provider findByPhone(String phone);
 
@@ -36,5 +39,7 @@ public interface ProviderService {
     String enableProvider(Long id, boolean isEnable);
 
     List<Provider> getByServiceId(String serviceId);
+
+    void setVerify(Long id, boolean isVerify);
 }
 

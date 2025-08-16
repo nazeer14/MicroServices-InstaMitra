@@ -1,6 +1,7 @@
 package com.pack.service;
 
 
+import com.pack.common.dto.OrderCompletedDTO;
 import com.pack.common.dto.OrderResponseDTO;
 import com.pack.common.enums.OrderStatus;
 import com.pack.common.dto.OrderRequestDTO;
@@ -26,9 +27,9 @@ public interface OrderService {
     List<OrderResponseDTO> getOrdersByLocation(double lat, double lon, double radiusKm);
 
 
-    List<OrderResponseDTO> getOrdersByStatus(Long id, String status);
+    List<OrderResponseDTO> getOrdersByStatus(Long providerId, OrderStatus status);
 
-    void updateOrderStatus(String orderId, OrderStatus orderStatus);
+    void updateOrderStatus(String orderId, OrderCompletedDTO dto);
 
     OrderResponseDTO updateOrder(Long orderId, @Valid OrderRequestDTO requestDTO);
 

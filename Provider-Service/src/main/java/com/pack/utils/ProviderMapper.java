@@ -1,5 +1,6 @@
 package com.pack.utils;
 
+import com.pack.common.dto.Gender;
 import com.pack.common.dto.ProviderRequestDTO;
 import com.pack.common.dto.ProviderResponseDTO;
 import com.pack.entity.Provider;
@@ -16,7 +17,7 @@ public class ProviderMapper {
                 .fullName(dto.getFullName())
                 .phoneNumber(dto.getPhoneNumber())
                 .email(dto.getEmail())
-                .gender(dto.getGender())
+                .gender(Gender.valueOf(dto.getGender()))
                 .age(dto.getAge())
                 .profileImageUrl(dto.getProfileImageUrl())
                 .location(dto.getLocation())
@@ -41,7 +42,7 @@ public class ProviderMapper {
                 .fullName(entity.getFullName())
                 .phoneNumber(entity.getPhoneNumber())
                 .email(entity.getEmail())
-                .gender(entity.getGender())
+                .gender(entity.getGender().name())
                 .age(entity.getAge())
                 .profileImageUrl(entity.getProfileImageUrl())
                 .location(entity.getLocation())

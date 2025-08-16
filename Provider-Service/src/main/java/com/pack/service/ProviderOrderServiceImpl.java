@@ -12,12 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -78,27 +80,37 @@ public class ProviderOrderServiceImpl implements ProviderOrdersService {
         return Collections.emptyList();
     }
 
+    @Override
     @Retry(name = "ordersServiceRetry")
     @CircuitBreaker(name = "ordersServiceCB", fallbackMethod = "fallbackSingleOrder")
-    @Override
-    public OrderResponseDTO getOrderByOrderId(Long id,Long orderId){
-        providerRepository.findById(id).orElseThrow(()->new ProviderNotFoundException("Not found"));
+    public OrderResponseDTO getOrderByOrderId(Long providerId, Long orderId) {
+        // Ensure provider exists
+        providerRepository.findById(providerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found"));
 
-        ResponseEntity<OrderResponseDTO> orderDTO=restTemplate.exchange(
-                ordersServiceBaseUrl + orderId + "/get-order",
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<OrderResponseDTO>() {}
-        );
-        return orderDTO.getBody();
+        String url = String.format("%s/orders/v1/%d/get-order", ordersServiceBaseUrl, orderId);
+
+        try {
+            ResponseEntity<OrderResponseDTO> orderDTO = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<OrderResponseDTO>() {}
+            );
+            return orderDTO.getBody();
+        } catch (HttpClientErrorException.NotFound ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
     }
 
-    public OrderResponseDTO fallbackSingleOrder(Long id, Long orderId, Throwable throwable) {
 
+    public OrderResponseDTO fallbackSingleOrder(Long providerId, Long orderId, Throwable throwable) {
+        log.error("Fallback triggered for providerId={}, orderId={}", providerId, orderId, throwable);
         return OrderResponseDTO.builder()
-                .id(id)
+                .id(orderId)
                 .status(OrderStatus.FAILED)
                 .notes("Order service unavailable. Please try later.")
                 .build();
     }
+
 }

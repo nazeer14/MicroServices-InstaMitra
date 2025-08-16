@@ -1,17 +1,20 @@
 package com.pack.service.impl;
 
+import com.pack.dto.PaginatedResponse;
+import com.pack.dto.ServicesDTO;
 import com.pack.entity.ServiceCatalog;
 import com.pack.entity.SubService;
 import com.pack.repository.ServiceRepository;
 import com.pack.repository.SubServiceRepository;
 import com.pack.service.ServicesCatalogService;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,7 @@ public class ServicesCatalogServiceImpl implements ServicesCatalogService {
     @Override
     public ServiceCatalog getById(Long id) {
         return serviceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Service not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Service not found with ID: " + id));
     }
 
     @Override
@@ -40,46 +43,40 @@ public class ServicesCatalogServiceImpl implements ServicesCatalogService {
     }
 
     @Override
-    public void updateService(ServiceCatalog updatedService) {
-        ServiceCatalog existing = getById(updatedService.getId());
+    public ServiceCatalog updateService(Long id, ServicesDTO updatedService) {
+        ServiceCatalog existing = getById(id);
         existing.setName(updatedService.getName());
-        existing.setServiceCategory(updatedService.getServiceCategory());
+        existing.setServiceCategory(updatedService.getCategory());
         existing.setAbout(updatedService.getAbout());
-        existing.setEnabled(updatedService.isEnabled());
 
-        // Optionally handle sub-services
         if (updatedService.getSubServices() != null) {
             updatedService.getSubServices().forEach(sub -> sub.setService(existing));
             existing.setSubServices(updatedService.getSubServices());
         }
-
-        serviceRepository.save(existing);
+        return serviceRepository.save(existing);
     }
 
     @Override
     public void enableService(Long id, boolean isEnable) {
-        ServiceCatalog service =
-                getById(id);
+        ServiceCatalog service = getById(id);
         if (service.isEnabled() == isEnable) {
-            throw new IllegalArgumentException("Service already has enabled=" + isEnable);
+            throw new ResponseStatusException(BAD_REQUEST, "Service already has enabled=" + isEnable);
         }
         service.setEnabled(isEnable);
         serviceRepository.save(service);
     }
 
-
     @Override
     public ServiceCatalog getByCode(String code) {
         return serviceRepository.findByServiceCode(code)
-                .orElseThrow(() -> new RuntimeException("Service not found with code: " + code));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Service not found with code: " + code));
     }
 
     @Override
     public ServiceCatalog getByName(String name) {
         return serviceRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Service not found with name: " + name));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Service not found with name: " + name));
     }
-
 
     @Override
     public String addSubService(Long id, List<SubService> subServices) {
@@ -111,8 +108,17 @@ public class ServicesCatalogServiceImpl implements ServicesCatalogService {
     }
 
     @Override
-    public Page<SubService> getAvailableSubServices(Pageable pageable) {
-        return subServiceRepository.findAllByItIsAvailableTrue(pageable);
-    }
+    public PaginatedResponse<SubService> getAvailableSubServices(String serviceCode, int page, int size, Sort sort) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<SubService> subServicePage =
+                subServiceRepository.findAllByServiceIdAndItIsAvailable(serviceCode, true, pageable);
 
+        return new PaginatedResponse<>(
+                subServicePage.getContent(),
+                subServicePage.getNumber(),
+                subServicePage.getSize(),
+                subServicePage.getTotalElements(),
+                subServicePage.getTotalPages()
+        );
+    }
 }

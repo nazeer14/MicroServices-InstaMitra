@@ -7,13 +7,14 @@ import com.pack.dto.TransactionRequestDTO;
 import com.pack.dto.TransactionResponseDTO;
 import com.pack.entity.RefundTransaction;
 import com.pack.entity.Transaction;
-import com.pack.exception.ResourceNotFoundException;
 import com.pack.repository.RefundRepository;
 import com.pack.repository.TransactionRepository;
 import com.pack.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
-
     private final RefundRepository refundRepository;
 
     @Override
@@ -55,13 +55,13 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResponseDTO getTransactionById(Long id) {
         return transactionRepository.findById(id)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
     }
 
     @Override
     public TransactionResponseDTO refundTransaction(String transactionId, String refundTransactionId, String remarks) {
         Transaction transaction = transactionRepository.findByTransactionId(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
 
         transaction.setIsRefunded(true);
         transaction.setRefundTransactionId(refundTransactionId);
@@ -74,28 +74,27 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public TransactionResponseDTO findByTransactionId(String transactionId) {
-        Transaction transaction = transactionRepository.findByTransactionId(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
-        return toDTO(transaction);
+        return transactionRepository.findByTransactionId(transactionId)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
     }
 
     @Override
     public TransactionResponseDTO findByRefundTransactionId(String refundTransactionId) {
-        Transaction transaction = transactionRepository.findByRefundTransactionId(refundTransactionId)
-                .orElseThrow(() -> new RuntimeException("Refund transaction not found"));
-        return toDTO(transaction);
+        return transactionRepository.findByRefundTransactionId(refundTransactionId)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Refund transaction not found"));
     }
 
     @Override
     @Transactional
-    public RefundResponseDTO processRefund(RefundRequestDTO dto,Long userId, String ipAddress) {
+    public RefundResponseDTO processRefund(RefundRequestDTO dto, Long userId, String ipAddress) {
         Transaction txn = transactionRepository.findByTransactionId(dto.getTransactionId())
-                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
 
         if (txn.getPaymentStatus() != PaymentStatus.PAID) {
-            throw new IllegalStateException("Refund can only be applied to successful transactions");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refund can only be applied to successful transactions");
         }
-
 
         // Save refund transaction
         RefundTransaction refund = new RefundTransaction();
@@ -106,6 +105,7 @@ public class TransactionServiceImpl implements TransactionService {
         refund.setRemarks(dto.getReason());
         refund.setCreatedAt(LocalDateTime.now());
         refundRepository.save(refund);
+
         // Update original transaction
         txn.setPaymentStatus(PaymentStatus.REFUNDED);
         txn.setRefundTransactionId("refundTxnId");
@@ -114,7 +114,6 @@ public class TransactionServiceImpl implements TransactionService {
 
         return new RefundResponseDTO("refundTxnId", "SUCCESS", "User requested refund");
     }
-
 
     private TransactionResponseDTO toDTO(Transaction transaction) {
         return TransactionResponseDTO.builder()

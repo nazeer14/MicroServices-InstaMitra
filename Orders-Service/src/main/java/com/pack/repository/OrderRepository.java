@@ -30,6 +30,6 @@ public interface OrderRepository extends JpaRepository<Order,Long> {
 
     boolean existsByOrderNumber(String orderNumber);
 
-    List<Order> findByProviderIdAndStatus(Long providerId, String status);
+    List<Order> findByProviderIdAndStatus(Long providerId, OrderStatus status);
 
 }

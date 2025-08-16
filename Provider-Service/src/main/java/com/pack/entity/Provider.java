@@ -1,5 +1,6 @@
 package com.pack.entity;
 
+import com.pack.common.dto.Gender;
 import com.pack.common.enums.Role;
 import com.pack.enums.ProviderType;
 import com.pack.enums.VerificationStatus;
@@ -30,7 +31,7 @@ public class Provider {
     private String phoneNumber;
 
     private String email;
-    private String gender;
+    private Gender gender;
 
     private Integer age;
 

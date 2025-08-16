@@ -1,5 +1,7 @@
 package com.pack.exception;
 
+import com.pack.common.exception.JwtTokenExpiredException;
+import com.pack.common.response.ApiResponse;
 import com.pack.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -25,6 +27,12 @@ public class GlobalExceptionHandler {
         String msg = "Invalid type for parameter: " + ex.getName();
         ErrorResponse error = new ErrorResponse(msg, request.getRequestURI());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JwtTokenExpiredException.class)
+    public ResponseEntity<ApiResponse<?>> handleJwtTokenExpired(JwtTokenExpiredException ex) {
+        ApiResponse<?> response = ApiResponse.exception( ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
