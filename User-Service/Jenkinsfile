@@ -2,20 +2,29 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "docker.io/nazeer14/user-service"  // Change to your DockerHub/Registry
-        SERVICE_NAME = "${env.JOB_NAME}"      // Jenkins Job name = service name
-        IMAGE_TAG = "${env.BUILD_NUMBER}"     // Use build number as tag
+        REGISTRY = "docker.io/nazeer14/user-service"   // Your DockerHub registry
+        SERVICE_NAME = "${env.JOB_NAME}"              // Jenkins Job name = service name
+        IMAGE_TAG = "${env.BUILD_NUMBER}"             // Build number as tag
+        AWS_REGION = "eu-north-1"                     // Change if your cluster is in another region
+        EKS_CLUSTER = "interesting-jazz-sheepdog"                    // Your EKS cluster name
     }
 
     tools {
-        jdk "jdk17"         // Pre-configure in Jenkins Global Tools
-        maven "maven3"      // Pre-configure in Jenkins Global Tools
+        jdk "jdk17"
+        maven "maven3"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/nazeer14/MicroServices-InstaMitra.git',
+                        credentialsId: 'github-credentials'
+                    ]]
+                ])
             }
         }
 
@@ -39,7 +48,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}")
+                    dockerImage = docker.build("${REGISTRY}:${IMAGE_TAG}")
                 }
             }
         }
@@ -55,11 +64,14 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to EKS') {
             steps {
-                echo "Deploy step for ${SERVICE_NAME} (optional - k8s/compose)"
-                // For Kubernetes:
-                // sh "kubectl rollout restart deployment ${SERVICE_NAME} -n your-namespace"
+                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
+                    sh """
+                        aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${AWS_REGION}
+                        kubectl apply -f k8s/deployment.yaml
+                    """
+                }
             }
         }
     }
