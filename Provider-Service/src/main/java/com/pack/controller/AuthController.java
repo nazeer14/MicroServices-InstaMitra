@@ -4,23 +4,18 @@ import com.pack.auth.JwtUtil;
 import com.pack.common.dto.AuthRequest;
 import com.pack.common.dto.JwtResponse;
 import com.pack.common.dto.RefreshTokenRequest;
-import com.pack.common.enums.Role;
 import com.pack.dto.LoginResponse;
 import com.pack.entity.Provider;
 import com.pack.service.ProviderService;
-import com.pack.service.ProviderServiceImpl;
 import com.pack.utils.OtpService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")

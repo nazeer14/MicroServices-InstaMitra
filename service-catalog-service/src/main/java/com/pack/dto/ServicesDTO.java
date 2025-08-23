@@ -12,13 +12,14 @@ import java.util.List;
 @NoArgsConstructor
 public class ServicesDTO {
 
+    private Long id;
+
     private String name;
+
+    private String code;
 
     private String about;
 
-    private List<SubService> subServices;
-
     private String category;
-
 
 }

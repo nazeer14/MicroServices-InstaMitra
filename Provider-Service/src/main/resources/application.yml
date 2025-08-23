@@ -7,7 +7,7 @@ eureka:
       prefer-ip-address: true
 
 order:
-  base-url: http://order-service:8082
+  base-url: http://order-service:8086
 
 spring:
   application:

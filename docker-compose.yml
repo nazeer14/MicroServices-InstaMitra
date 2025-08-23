@@ -168,6 +168,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/instamitra
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis-service
+      SPRING_DATA_REDIS_PORT: 6379
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
       SPRING_BOOT_ADMIN_CLIENT_URL: http://admin-server-app:8080
 

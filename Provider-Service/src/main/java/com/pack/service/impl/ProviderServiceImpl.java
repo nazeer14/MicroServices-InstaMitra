@@ -1,5 +1,3 @@
-package com.pack.service;
-
 import com.pack.common.dto.Gender;
 import com.pack.common.dto.ProviderRequestDTO;
 import com.pack.dto.FormDetails;
@@ -7,10 +5,11 @@ import com.pack.entity.Provider;
 import com.pack.enums.ProviderType;
 import com.pack.enums.VerificationStatus;
 import com.pack.repository.ProviderRepository;
-import jakarta.transaction.Transactional;
+import com.pack.service.ProviderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +24,9 @@ public class ProviderServiceImpl implements ProviderService {
 
     private final ProviderRepository providerRepository;
 
+    // ✅ Create or Validate Provider (Evict cache to avoid stale data)
     @Override
+    @CacheEvict(value = "providers", allEntries = true)
     public Provider validateAndAdd(String phoneNumber) {
         Optional<Provider> provider = providerRepository.findByPhoneNumber(phoneNumber);
         if (provider.isPresent()) {
@@ -39,10 +40,34 @@ public class ProviderServiceImpl implements ProviderService {
         return providerRepository.save(provider1);
     }
 
+    // ✅ Cache provider by phone
     @Override
-    public Provider submitDetails(Long id, FormDetails dto) {
-        Provider provider = providerRepository.findById(id)
+    @Cacheable(value = "providers", key = "'phone:' + #phone")
+    public Provider findByPhone(String phone) {
+        return providerRepository.findByPhoneNumber(phone)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with Number " + phone + " not found"));
+    }
+
+    // ✅ Cache provider by ID
+    @Override
+    @Cacheable(value = "providers", key = "'id:' + #id")
+    public Provider getById(Long id) {
+        return providerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found"));
+    }
+
+    // ✅ Cache all providers
+    @Override
+    @Cacheable(value = "providers", key = "'all'")
+    public List<Provider> getAll() {
+        return providerRepository.findAll();
+    }
+
+    // ✅ Submit details → Update cache
+    @Override
+    @CachePut(value = "providers", key = "'id:' + #id")
+    public Provider submitDetails(Long id, FormDetails dto) {
+        Provider provider = getById(id);
 
         provider.setFullName(dto.getFullName());
         provider.setIndustryType(dto.getIndustryType());
@@ -60,62 +85,39 @@ public class ProviderServiceImpl implements ProviderService {
         return providerRepository.save(provider);
     }
 
+    // ✅ Enable / Disable provider → Evict cache
     @Override
-    public Provider findByPhone(String phone) {
-        return providerRepository.findByPhoneNumber(phone)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with Number " + phone + " not found"));
-    }
-
-    @Override
-    public Provider getById(Long id) {
-        return providerRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found"));
-    }
-
-    @Override
-    public List<Provider> getAll() {
-        return providerRepository.findAll();
-    }
-
-    @Override
+    @CacheEvict(value = "providers", key = "'id:' + #id")
     public String enableProvider(Long id, boolean isEnable) {
-        Optional<Provider> provider = providerRepository.findById(id);
-        if (provider.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with " + id + " not found");
-        }
-        Provider newProvider = provider.get();
-        if (newProvider.isEnabled() == isEnable) {
+        Provider provider = providerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with " + id + " not found"));
+        if (provider.isEnabled() == isEnable) {
             return "Not updatable";
         }
-        newProvider.setEnabled(isEnable);
-        providerRepository.save(newProvider);
+        provider.setEnabled(isEnable);
+        providerRepository.save(provider);
         return "Status updated";
     }
 
+    // ✅ Cache providers by service ID
     @Override
+    @Cacheable(value = "providers", key = "'service:' + #serviceId")
     public List<Provider> getByServiceId(String serviceId) {
         return providerRepository.findByServiceIdsContainsAndIsActiveTrueAndIsEnabledTrueAndIsLockedFalseAndIsVerifiedTrueAndIsSubmittedTrue(serviceId);
     }
 
+    // ✅ Update verification → Evict cache
     @Override
+    @CacheEvict(value = "providers", key = "'id:' + #id")
     public void setVerify(Long id, boolean isVerify) {
-        Provider provider = providerRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found with id " + id));
+        Provider provider = getById(id);
         provider.setVerified(isVerify);
         providerRepository.save(provider);
     }
 
+    // ✅ Update provider (full details) → Update cache
     @Override
-    public Page<Provider> getAllPaged(Pageable pageable) {
-        return providerRepository.findAll(pageable);
-    }
-
-    @Override
-    public Page<Provider> getByOnlineStatus(boolean online, Pageable pageable) {
-        return providerRepository.findByIsOnline(online, pageable);
-    }
-
-    @Override
+    @CachePut(value = "providers", key = "'id:' + #id")
     @Transactional
     public Provider updateProvider(Long id, ProviderRequestDTO dto) {
         Provider provider = getById(id);
@@ -138,7 +140,9 @@ public class ProviderServiceImpl implements ProviderService {
         return providerRepository.save(provider);
     }
 
+    // ✅ Lock provider → Evict cache
     @Override
+    @CacheEvict(value = "providers", key = "'id:' + #id")
     public void lockProvider(Long id, String reason) {
         Provider provider = getById(id);
         provider.setLocked(true);
@@ -146,7 +150,9 @@ public class ProviderServiceImpl implements ProviderService {
         providerRepository.save(provider);
     }
 
+    // ✅ Unlock provider → Evict cache
     @Override
+    @CacheEvict(value = "providers", key = "'id:' + #id")
     public void unlockProvider(Long id) {
         Provider provider = getById(id);
         provider.setLocked(false);
@@ -154,18 +160,19 @@ public class ProviderServiceImpl implements ProviderService {
         providerRepository.save(provider);
     }
 
+    // ✅ Delete provider (soft delete) → Evict cache
     @Override
+    @CacheEvict(value = "providers", key = "'id:' + #id")
     public void deleteProvider(Long id) {
-        Optional<Provider> provider = providerRepository.findById(id);
-        if (provider.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found");
-        }
-        Provider provider1 = provider.get();
-        provider1.setLocked(true);
-        providerRepository.save(provider1);
+        Provider provider = providerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider with ID " + id + " not found"));
+        provider.setLocked(true);
+        providerRepository.save(provider);
     }
 
+    // ✅ Update online/offline → Update cache
     @Override
+    @CachePut(value = "providers", key = "'id:' + #id")
     public Provider updateStatus(Long id, boolean isOnline) {
         Provider provider = getById(id);
         provider.setIsOnline(isOnline);

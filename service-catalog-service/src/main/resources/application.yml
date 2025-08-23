@@ -11,7 +11,10 @@ spring:
           metadata:
             user.name: admin
             user.password: admin123
-
+  data:
+    redis:
+      host: redis
+      port: 6379
 
 
 management:

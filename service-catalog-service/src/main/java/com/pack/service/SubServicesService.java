@@ -27,5 +27,5 @@ public interface SubServicesService {
 
     Page<SubService> getAvailableSubServices(Pageable pageable);
 
-    Page<SubService> getAvailableSubServicesByServiceId(String serviceId, Pageable pageable);
+    Page<SubService> getAvailableSubServicesByServiceId(Long serviceId, Pageable pageable);
 }

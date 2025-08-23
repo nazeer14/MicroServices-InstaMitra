@@ -27,12 +27,10 @@ public interface ServicesCatalogService {
 
     ServiceCatalog getByName(String name);
 
-    String addSubService(Long id, List<SubService> subServices);
-
     List<ServiceCatalog> getAllServices();
 
     void deleteService(Long id);
 
-    PaginatedResponse<SubService> getAvailableSubServices(String code,int page, int size, Sort sort);
+    PaginatedResponse<SubService> getAvailableSubServices(Long serviceId,int page, int size, Sort sort);
 
 }

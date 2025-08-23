@@ -16,7 +16,7 @@ public interface SubServiceRepository extends JpaRepository<SubService,Long> {
 
     Page<SubService> findAllByItIsAvailable(boolean isAvailable, Pageable pageable);
 
-    Page<SubService> findAllByServiceIdAndItIsAvailable(String serviceId, boolean itIsAvailable, Pageable pageable);
+    Page<SubService> findAllByServiceIdAndItIsAvailable(Long serviceId, boolean itIsAvailable, Pageable pageable);
 
     Page<SubService> findAllByItIsAvailableTrue(Pageable pageable);
 

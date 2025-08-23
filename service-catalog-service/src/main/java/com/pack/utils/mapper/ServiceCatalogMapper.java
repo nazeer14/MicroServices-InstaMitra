@@ -16,20 +16,6 @@ public class ServiceCatalogMapper {
         service.setName(dto.getName());
         service.setServiceCategory(dto.getCategory());
         service.setAbout(dto.getAbout());
-
-        if (dto.getSubServices() != null) {
-            List<SubService> subEntities = dto.getSubServices().stream()
-                    .map(subDto -> {
-                        SubService sub = new SubService();
-                        sub.setId(subDto.getId());
-                        sub.setName(subDto.getName());
-                        sub.setService(service);
-                        return sub;
-                    })
-                    .collect(Collectors.toList());
-            service.setSubServices(subEntities);
-        }
-
         return service;
     }
 
@@ -37,7 +23,9 @@ public class ServiceCatalogMapper {
         if (service == null) return null;
 
         ServicesDTO dto = new ServicesDTO();
+        dto.setId(service.getId());
         dto.setName(service.getName());
+        dto.setCode(service.getServiceCode());
         dto.setCategory(service.getServiceCategory());
         dto.setAbout(service.getAbout());
 

@@ -26,10 +26,5 @@ public class ServiceCatalog implements Serializable {
 
     private String about;
 
-
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<SubService> subServices;
-
     private boolean enabled=false;
 }

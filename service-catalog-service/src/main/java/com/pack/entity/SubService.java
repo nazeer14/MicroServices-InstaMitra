@@ -28,10 +28,8 @@ public class SubService implements Serializable {
 
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "service_id")
-    @JsonBackReference
-    private ServiceCatalog service;
+   @Column(name = "service_id")
+    private Long serviceId;
 
     @Column(name = "it_is_available")
     private boolean itIsAvailable;

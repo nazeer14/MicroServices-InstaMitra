@@ -19,6 +19,7 @@ public class OrderResponseDTO {
     private LocalDateTime orderDate;
     private BigDecimal amount;
     private PaymentStatus paymentStatus;
+    private String serviceName;
     private String transactionId;
     private Long userId;
     private Long providerId;

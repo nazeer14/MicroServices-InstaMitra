@@ -28,12 +28,11 @@ public class ServiceCatalogController {
     private final ServicesCatalogService servicesCatalogService;
 
     @Operation(summary = "Create a new service")
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse<ServiceCatalog>> createService(@Valid @RequestBody ServicesDTO dto) {
         ServiceCatalog newService=new ServiceCatalog();
         newService.setName(dto.getName());
         newService.setAbout(dto.getAbout());
-        newService.setSubServices(dto.getSubServices());
         newService.setServiceCategory(dto.getCategory());
         ServiceCatalog created = servicesCatalogService.addService(newService);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -41,14 +40,14 @@ public class ServiceCatalogController {
     }
 
     @Operation(summary = "Get service by ID")
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/get")
     public ResponseEntity<ApiResponse<ServiceCatalog>> getServiceById(@PathVariable Long id) {
         ServiceCatalog service = servicesCatalogService.getById(id);
         return ResponseEntity.ok(ApiResponse.ok("Service fetched successfully", service));
     }
 
     @Operation(summary = "Update an existing service")
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/update")
     public ResponseEntity<ApiResponse<ServiceCatalog>> updateService(@PathVariable Long id,
                                                                      @Valid @RequestBody ServicesDTO dto) {
         ServiceCatalog updated = servicesCatalogService.updateService(id, dto);
@@ -66,7 +65,7 @@ public class ServiceCatalogController {
     @Operation(summary = "Get paginated sub-services")
     @GetMapping("/{serviceId}/subservices")
     public ResponseEntity<ApiResponse<PaginatedResponse<SubService>>> getSubServices(
-            @PathVariable String serviceId,
+            @PathVariable Long serviceId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String[] sort) {

@@ -89,7 +89,7 @@ public class SubServiceController {
     @Operation(summary = "Get paginated list of available SubServices by Service ID")
     @GetMapping("/available/by-service/{serviceId}")
     public ResponseEntity<Page<SubService>> getAvailableSubServicesByServiceId(
-            @PathVariable String serviceId,
+            @PathVariable Long serviceId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -139,7 +139,7 @@ public class SubServiceController {
     @Operation(summary = "get all service by id")
     @GetMapping("/services/{serviceId}/available-subservices")
     public ResponseEntity<ApiResponse<?>> getAvailableSubServicesByServiceId(
-            @PathVariable String serviceId,
+            @PathVariable Long serviceId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name") String sortBy,
@@ -158,6 +158,4 @@ public class SubServiceController {
 
         return ResponseEntity.ok(ApiResponse.ok("success", response));
     }
-
-
 }
