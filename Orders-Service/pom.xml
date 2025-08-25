@@ -33,7 +33,7 @@
 		<artifactId>spring-boot-starter-data-jpa</artifactId>
 	</dependency>
 		<dependency>
-			<groupId>com.instamitra</groupId>
+			<groupId>com.pack</groupId>
 			<artifactId>common-lib</artifactId>
 			<version>1.0.0</version>
 		</dependency>
@@ -179,12 +179,12 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>github</id>
-			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>
-		</repository>
-	</repositories>
+<!--	<repositories>-->
+<!--		<repository>-->
+<!--			<id>github</id>-->
+<!--			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>-->
+<!--		</repository>-->
+<!--	</repositories>-->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

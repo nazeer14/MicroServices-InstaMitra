@@ -131,7 +131,7 @@
 		</dependency>
 		<!-- Shared Common Module -->
 		<dependency>
-			<groupId>com.instamitra</groupId>
+			<groupId>com.pack</groupId>
 			<artifactId>common-lib</artifactId>
 			<version>1.0.0</version>
 		</dependency>
@@ -184,6 +184,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.5.4</version>
 				<executions>
 					<execution>
 						<goals>
@@ -191,18 +192,13 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<compilerArgs>
-						<arg>-parameters</arg>
-					</compilerArgs>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
-		<repository>
-			<id>github</id>
-			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>
-		</repository>
-	</repositories>
+<!--	<repositories>-->
+<!--		<repository>-->
+<!--			<id>github</id>-->
+<!--			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>-->
+<!--		</repository>-->
+<!--	</repositories>-->
 </project>
