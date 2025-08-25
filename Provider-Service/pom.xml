@@ -7,6 +7,7 @@
 		<groupId>com.pack</groupId>
 		<artifactId>backend-services</artifactId>
 		<version>1.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>provider-service</artifactId>
