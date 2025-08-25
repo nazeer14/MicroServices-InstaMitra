@@ -9,7 +9,6 @@
 		<artifactId>backend-services</artifactId>
 		<version>1.0.0</version>
 	</parent>
-
 	<artifactId>user-service</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
