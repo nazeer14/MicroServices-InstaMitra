@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>user-service</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<name>User Service</name>
 	<dependencies>
