@@ -1,3 +1,5 @@
+package com.pack.service.impl;
+
 import com.pack.common.dto.Gender;
 import com.pack.common.dto.ProviderRequestDTO;
 import com.pack.dto.FormDetails;
@@ -6,10 +8,13 @@ import com.pack.enums.ProviderType;
 import com.pack.enums.VerificationStatus;
 import com.pack.repository.ProviderRepository;
 import com.pack.service.ProviderService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -158,6 +163,16 @@ public class ProviderServiceImpl implements ProviderService {
         provider.setLocked(false);
         provider.setReasonForLock(null);
         providerRepository.save(provider);
+    }
+
+    @Override
+    public Page<Provider> getAllPaged(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public Page<Provider> getByOnlineStatus(boolean online, Pageable pageable) {
+        return null;
     }
 
     // ✅ Delete provider (soft delete) → Evict cache

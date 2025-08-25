@@ -131,11 +131,18 @@
         </dependency>
         <!-- Shared Common Module -->
         <dependency>
-            <groupId>com.pack</groupId>
+            <groupId>com.instamitra</groupId>
             <artifactId>common-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>
+        </repository>
+    </repositories>
+
 
     <dependencyManagement>
         <dependencies>

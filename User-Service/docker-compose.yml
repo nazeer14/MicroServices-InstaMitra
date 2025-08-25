@@ -1,0 +1,12 @@
+# docker-compose.yml example
+services:
+  user-service:
+    build: ./User-Service
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:5432/instamitra
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+

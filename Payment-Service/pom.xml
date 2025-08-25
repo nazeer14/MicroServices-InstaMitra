@@ -149,7 +149,7 @@
 
 		<!-- Common Lib -->
 		<dependency>
-			<groupId>com.pack</groupId>
+			<groupId>com.instamitra</groupId>
 			<artifactId>common-lib</artifactId>
 			<version>1.0.0</version>
 		</dependency>
@@ -193,6 +193,13 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository>
+			<id>github</id>
+			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>
+		</repository>
+	</repositories>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

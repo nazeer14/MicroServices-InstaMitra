@@ -9,7 +9,9 @@
 		<version>1.0.0</version>
 	</parent>
 
+	<groupId>com.instamitra</groupId>
 	<artifactId>common-lib</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -76,6 +78,13 @@
 			<version>3.0.2</version>
 		</dependency>
 	</dependencies>
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>
+		</repository>
+	</distributionManagement>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

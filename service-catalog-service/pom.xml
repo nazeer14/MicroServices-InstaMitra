@@ -29,11 +29,6 @@
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>com.pack</groupId>
-			<artifactId>common-lib</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
@@ -98,8 +93,20 @@
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
 		</dependency>
+		<!-- Shared Common Module -->
+		<dependency>
+			<groupId>com.instamitra</groupId>
+			<artifactId>common-lib</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
+	<repositories>
+		<repository>
+			<id>github</id>
+			<url>https://maven.pkg.github.com/nazeer14/instamitra-common-lib</url>
+		</repository>
+	</repositories>
 
 
 	<dependencyManagement>
