@@ -1,30 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-service
+  name: api-gateway
   namespace: instamitra
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user-service
+      app: api-gateway
   template:
     metadata:
       labels:
-        app: user-service
+        app: api-gateway
     spec:
       containers:
-        - name: user-service
-          image: instamitra-ci-user-service:latest
+        - name: api-gateway
+          image: instamitra-ci-api-gateway:latest
           ports:
             - containerPort: 8080
           env:
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://mysql:3306/instamitra
-            - name: SPRING_DATASOURCE_USERNAME
-              value: root
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://service-registry:8761/eureka/
+            - name: SPRING_BOOT_ADMIN_CLIENT_URL
+              value: http://admin-server-app:8080
             - name: SPRING_DATA_REDIS_HOST
               value: redis
             - name: SPRING_DATA_REDIS_PORT
@@ -33,12 +31,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service
+  name: api-gateway
   namespace: instamitra
 spec:
   type: ClusterIP
   selector:
-    app: user-service
+    app: api-gateway
   ports:
     - port: 8080
       targetPort: 8080

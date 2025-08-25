@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-server-app
+  namespace: instamitra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-server-app
+  template:
+    metadata:
+      labels:
+        app: admin-server-app
+    spec:
+      containers:
+        - name: admin-server-app
+          image: instamitra-ci-admin-server-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://service-registry:8761/eureka/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-server-app
+  namespace: instamitra
+spec:
+  type: ClusterIP
+  selector:
+    app: admin-server-app
+  ports:
+    - port: 8080
+      targetPort: 8080
