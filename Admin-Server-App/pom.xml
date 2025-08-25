@@ -6,7 +6,7 @@
 		<groupId>com.pack</groupId>
 		<artifactId>backend-services</artifactId>
 		<version>1.0.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>admin-server-app</artifactId>
 	<packaging>jar</packaging>
