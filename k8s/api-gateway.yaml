@@ -3,8 +3,10 @@ kind: Deployment
 metadata:
   name: api-gateway
   namespace: instamitra
+  labels:
+    app: api-gateway
 spec:
-  replicas: 1
+  replicas: 2 # ✅ High availability (can scale more later)
   selector:
     matchLabels:
       app: api-gateway
@@ -16,6 +18,7 @@ spec:
       containers:
         - name: api-gateway
           image: instamitra-ci-api-gateway:latest
+          imagePullPolicy: IfNotPresent # ✅ avoids always pulling image
           ports:
             - containerPort: 8080
           env:
@@ -27,16 +30,39 @@ spec:
               value: redis
             - name: SPRING_DATA_REDIS_PORT
               value: "6379"
+          resources: # ✅ set resource requests/limits
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          readinessProbe: # ✅ checks if app is ready
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe: # ✅ restarts pod if stuck
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: api-gateway
   namespace: instamitra
+  labels:
+    app: api-gateway
 spec:
-  type: ClusterIP
+  type: ClusterIP # ✅ inside-cluster communication
   selector:
     app: api-gateway
   ports:
-    - port: 8080
+    - name: http
+      port: 8080
       targetPort: 8080

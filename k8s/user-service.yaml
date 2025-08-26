@@ -15,20 +15,47 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: instamitra-ci-user-service:latest
+          image: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/instamitra/user-service:latest
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql:3306/instamitra
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
             - name: SPRING_DATA_REDIS_HOST
               value: redis
             - name: SPRING_DATA_REDIS_PORT
               value: "6379"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://service-registry:8761/eureka/
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service

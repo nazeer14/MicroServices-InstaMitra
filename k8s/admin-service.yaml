@@ -15,16 +15,22 @@ spec:
     spec:
       containers:
         - name: admin-service
-          image: instamitra-ci-admin-service:latest
+          image: <account-id>.dkr.ecr.<region>.amazonaws.com/instamitra-ci-admin-service:v1.0.0
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql:3306/instamitra
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
             - name: SPRING_DATA_REDIS_HOST
               value: redis
             - name: SPRING_DATA_REDIS_PORT
@@ -36,7 +42,29 @@ spec:
             - name: SUPER_ADMIN_NUMBER
               value: "1234567890"
             - name: SUPER_ADMIN_KEY
-              value: mySuperSecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: super-key
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
 ---
 apiVersion: v1
 kind: Service

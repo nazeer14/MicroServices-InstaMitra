@@ -16,11 +16,31 @@ spec:
       containers:
         - name: admin-server-app
           image: instamitra-ci-admin-server-app:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-              value: http://service-registry:8761/eureka/
+              value: http://service-registry.instamitra.svc.cluster.local:8761/eureka/
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service

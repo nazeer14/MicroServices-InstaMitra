@@ -4,7 +4,7 @@ metadata:
   name: provider-service
   namespace: instamitra
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: provider-service
@@ -15,24 +15,33 @@ spec:
     spec:
       containers:
         - name: provider-service
-          image: instamitra-ci-provider-service:latest
+          image: 087725326648.dkr.ecr.ap-south-1.amazonaws.com/instamitra-ci-provider-service:latest
           ports:
             - containerPort: 8080
-          env:
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://mysql:3306/instamitra
-            - name: SPRING_DATASOURCE_USERNAME
-              value: root
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: root
-            - name: SPRING_DATA_REDIS_HOST
-              value: redis
-            - name: SPRING_DATA_REDIS_PORT
-              value: "6379"
-            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-              value: http://service-registry:8761/eureka/
-            - name: SPRING_BOOT_ADMIN_CLIENT_URL
-              value: http://admin-server-app:8080
+          envFrom:
+            - secretRef:
+                name: mysql-secret
+            - configMapRef:
+                name: provider-config
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service

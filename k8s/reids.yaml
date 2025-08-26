@@ -18,6 +18,45 @@ spec:
           image: redis:7.0
           ports:
             - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          command: ["redis-server", "--appendonly", "yes"]
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: instamitra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard  # Change if your cluster uses another class
 
 ---
 apiVersion: v1
@@ -26,8 +65,9 @@ metadata:
   name: redis
   namespace: instamitra
 spec:
+  type: ClusterIP
+  selector:
+    app: redis
   ports:
     - port: 6379
       targetPort: 6379
-  selector:
-    app: redis

@@ -4,7 +4,7 @@ metadata:
   name: service-registry
   namespace: instamitra
 spec:
-  replicas: 1
+  replicas: 2   # Use at least 2 for HA
   selector:
     matchLabels:
       app: service-registry
@@ -15,9 +15,31 @@ spec:
     spec:
       containers:
         - name: service-registry
-          image: instamitra-ci-service-registry:latest
+          image: 087725326648.dkr.ecr.ap-south-1.amazonaws.com/instamitra/service-registry:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8761
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      restartPolicy: Always
+
 ---
 apiVersion: v1
 kind: Service
