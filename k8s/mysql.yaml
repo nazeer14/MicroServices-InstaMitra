@@ -34,12 +34,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
-                  key: nazeer@14
+                  key: MYSQL_ROOT_PASSWORD   # ✅ fixed
             - name: MYSQL_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
-                  key: MYSQL_DATABASE
+                  key: MYSQL_DATABASE        # ✅ correct
           volumeMounts:
             - name: mysql-pvc
               mountPath: /var/lib/mysql
