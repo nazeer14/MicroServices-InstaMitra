@@ -34,6 +34,7 @@ services:
 
   service-registry:
     build: ./Service-Registry
+    image: service-registry:latest
     container_name: service-registry
     ports:
       - "8761:8761"
@@ -42,6 +43,7 @@ services:
 
   admin-server-app:
     build: ./Admin-Server-App
+    image: admin-server-app:latest
     container_name: admin-server-app
     ports:
       - "9090:8080"
@@ -52,6 +54,7 @@ services:
 
   api-gateway:
     build: ./api-gateway
+    image: api-gateway:latest
     container_name: api-gateway
     ports:
       - "8080:8080"
@@ -70,6 +73,7 @@ services:
 
   admin-service:
     build: ./Admin-service
+    image: admin-service:latest
     container_name: admin-service
     ports:
       - "8081:8080"
@@ -93,6 +97,7 @@ services:
 
   user-service:
     build: ./User-Service
+    image: user-service:latest
     container_name: user-service
     ports:
       - "8082:8080"
@@ -114,6 +119,7 @@ services:
 
   provider-service:
     build: ./Provider-Service
+    image: provider-service:latest
     container_name: provider-service
     ports:
       - "8083:8080"
@@ -135,6 +141,7 @@ services:
 
   payment-service:
     build: ./Payment-Service
+    image: payment-service:latest
     container_name: payment-service
     ports:
       - "8084:8080"
@@ -156,6 +163,7 @@ services:
 
   service-catalog-service:
     build: ./service-catalog-service
+    image: service-catalog-service:latest
     container_name: service-catalog-service
     ports:
       - "8085:8080"
@@ -175,6 +183,7 @@ services:
 
   orders-service:
     build: ./Orders-Service
+    image: orders-service:latest
     container_name: orders-service
     ports:
       - "8086:8080"
